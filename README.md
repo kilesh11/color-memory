@@ -2,9 +2,28 @@
 
 ## Running the Color Memory React Native application
 
+### Step 1: install library
+
+First, install npm package
+
+```shell
+yarn
+```
+### Step 2: install pod packge
+
+Second, install cocoapod dependency
+
+If you don't have cocoa pods installed you need to `sudo gem install cocoapods`
+
+```shell
+cd ios
+pod install
+cd ..
+```
+
 ### Step 1: Start Metro
 
-First, you will need to start Metro, the JavaScript bundler that ships with React Native. Metro "takes in an entry file and various options, and returns a single JavaScript file that includes all your code and its dependencies."—[Metro Docs](https://facebook.github.io/metro/docs/concepts)
+Then, you will need to start Metro, the JavaScript bundler that ships with React Native. Metro "takes in an entry file and various options, and returns a single JavaScript file that includes all your code and its dependencies."—[Metro Docs](https://facebook.github.io/metro/docs/concepts)
 
 To start Metro, run `npx react-native start` inside your React Native project folder:
 
