@@ -17,12 +17,11 @@ import {
   Text,
   useColorScheme,
   View,
-  FlatList,
-  TouchableOpacity,
-  Modal,
-  TextInput,
   Alert,
 } from 'react-native';
+import Gameboard from './Gameboard';
+import Highestscore from './Highestscore';
+import Modal from './Modal';
 
 import {Colors} from 'react-native/Libraries/NewAppScreen';
 
@@ -59,9 +58,6 @@ const color = {
   brown: '#92623a',
 };
 
-const column = 4;
-const row = 4;
-
 const App = () => {
   const isDarkMode = useColorScheme() === 'dark';
   const [score, setScore] = useState(0);
@@ -72,6 +68,7 @@ const App = () => {
   const [selectedIndex, setSelectedIndex] = useState([]);
   const [dimensions, setDimensions] = useState({width: 0, height: 0});
   const [ranking, setRanking] = useState([]);
+  const [gameMode, setGameMode] = useState(true);
 
   const backgroundStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
@@ -81,10 +78,6 @@ const App = () => {
     try {
       const jsonValue = await AsyncStorage.getItem('ranking');
       const newRanking = jsonValue != null ? JSON.parse(jsonValue) : [];
-      console.log(
-        'kyle_debug ~ file: App.js ~ line 84 ~ fetchRanking ~ newRanking',
-        newRanking,
-      );
       setRanking(newRanking);
     } catch (e) {
       Alert.alert('cannot find ranking');
@@ -149,17 +142,14 @@ const App = () => {
     } else {
       try {
         const newRanking = [...ranking];
-        newRanking.push({
-          name,
-          score,
-        });
+        newRanking.push({name, score});
         newRanking.sort((a, b) => b.score - a.score);
         const jsonValue = JSON.stringify(newRanking);
         await AsyncStorage.setItem('ranking', jsonValue);
         onReset();
         await fetchRanking();
       } catch (e) {
-        // saving error
+        Alert.alert('cannot save ranking');
       }
     }
   }, [name, score, onReset, ranking, fetchRanking]);
@@ -173,6 +163,21 @@ const App = () => {
     setModalVisible(prevState => !prevState);
   }, []);
 
+  const header = (
+    <>
+      <View style={styles.logo}>
+        <Text style={{fontSize: 16}}>Color Memory</Text>
+      </View>
+      <Text style={styles.score}>{score}</Text>
+      <View style={styles.highestScore}>
+        <Button
+          title={gameMode ? 'Highest Score' : 'Back to Game'}
+          onPress={() => setGameMode(prev => !prev)}
+        />
+      </View>
+    </>
+  );
+
   return (
     <SafeAreaView style={backgroundStyle}>
       <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
@@ -181,83 +186,44 @@ const App = () => {
           backgroundColor: isDarkMode ? Colors.black : Colors.white,
           height: '100%',
         }}>
-        <View style={styles.header}>
-          <View style={styles.logo}>
-            <Text style={{fontSize: 16}}>Color Memory</Text>
-          </View>
-          <Text
-            style={{
-              flex: 1,
-              textAlign: 'center',
-              fontSize: 30,
-            }}>
-            {score}
-          </Text>
-          <View style={styles.highestScore}>
-            <Button
-              title="Highest Score"
-              onPress={() => console.log('pressed')}
-            />
-          </View>
-        </View>
+        <View style={styles.header}>{header}</View>
         <View
           style={{
             height: '90%',
             flex: 1,
           }}
           onLayout={onLayout}>
-          <FlatList
-            data={grid}
-            renderItem={({item, index}) => (
-              <TouchableOpacity
-                onPress={() => cardOnPress(index)}
-                style={{
-                  flex: 1,
-                  backgroundColor: resolvedIndex.includes(index)
-                    ? 'white'
-                    : selectedIndex.includes(index)
-                    ? item.hex
-                    : 'grey',
-                  width: dimensions.width / column,
-                  height: dimensions.height / row,
-                  borderWidth: 1,
-                  borderColor: '#fff',
-                }}
-              />
-            )}
-            numColumns={4}
-            scrollEnabled={false}
-            keyExtractor={(item, index) => index.toString()}
-          />
+          {gameMode ? (
+            <Gameboard
+              grid={grid}
+              cardOnPress={cardOnPress}
+              resolvedIndex={resolvedIndex}
+              selectedIndex={selectedIndex}
+              dimensions={dimensions}
+            />
+          ) : (
+            <Highestscore ranking={ranking} />
+          )}
         </View>
       </View>
-      <Modal animationType="slide" transparent={true} visible={modalVisible}>
-        <View style={styles.centeredView}>
-          <View style={styles.modalView}>
-            <Text style={{marginVertical: 15}}>Your Score</Text>
-            <Text style={{fontSize: 30}}>{score}</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Tell me Your Name"
-              placeholderTextColor="#aaaaaa"
-              onChangeText={setName}
-              value={name}
-              underlineColorAndroid="transparent"
-              autoCapitalize="none"
-            />
-            <Button
-              title="Submit"
-              style={[styles.button, styles.buttonClose]}
-              onPress={onScoreSubmit}
-            />
-          </View>
-        </View>
-      </Modal>
+      <Modal
+        modalVisible={modalVisible}
+        ranking={ranking}
+        score={score}
+        setName={setName}
+        name={name}
+        onScoreSubmit={onScoreSubmit}
+      />
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  score: {
+    flex: 1,
+    textAlign: 'center',
+    fontSize: 30,
+  },
   header: {
     height: '10%',
     flexDirection: 'row',
@@ -306,6 +272,9 @@ const styles = StyleSheet.create({
     marginLeft: 30,
     marginRight: 30,
     padding: 10,
+  },
+  tableHeader: {
+    fontSize: 20,
   },
 });
 
