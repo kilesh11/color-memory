@@ -7,7 +7,7 @@
  * @flow strict-local
  */
 
-import React, {useState, useCallback} from 'react';
+import React, {useState, useCallback, useEffect} from 'react';
 import {
   Button,
   SafeAreaView,
@@ -17,6 +17,7 @@ import {
   useColorScheme,
   View,
   FlatList,
+  TouchableOpacity,
 } from 'react-native';
 
 import {Colors} from 'react-native/Libraries/NewAppScreen';
@@ -61,15 +62,66 @@ const App = () => {
   const isDarkMode = useColorScheme() === 'dark';
   const [score, setScore] = useState(0);
   const [grid, setGrid] = useState(() => generateColorGrid());
+  const [resolvedIndex, setResolvedIndex] = useState([]);
+  console.log(
+    'kyle_debug ~ file: App.js ~ line 66 ~ App ~ resolvedIndex',
+    resolvedIndex,
+  );
+  const [selectedIndex, setSelectedIndex] = useState([]);
+  console.log(
+    'kyle_debug ~ file: App.js ~ line 66 ~ App ~ selectedIndex',
+    selectedIndex,
+  );
   const [dimensions, setDimensions] = useState({width: 0, height: 0});
   const backgroundStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
 
+  useEffect(() => {
+    if (selectedIndex.length === 2) {
+      let timer1 = setTimeout(() => {
+        if (grid[selectedIndex[0]].hex === grid[selectedIndex[1]].hex) {
+          setScore(prevScore => prevScore + 5);
+          setResolvedIndex(prevResolvedIndex => [
+            ...prevResolvedIndex,
+            ...selectedIndex,
+          ]);
+          setSelectedIndex([]);
+        } else {
+          setScore(prevScore => prevScore - 1);
+          setSelectedIndex([]);
+        }
+      }, 1000);
+      return () => {
+        clearTimeout(timer1);
+      };
+    }
+  }, [selectedIndex, grid]);
+
   const onLayout = useCallback(event => {
     let {width, height} = event.nativeEvent.layout;
     setDimensions({width, height});
   }, []);
+
+  const cardOnPress = useCallback(
+    index => {
+      let newSelectedIndex = [...selectedIndex];
+      if (selectedIndex.includes(index)) {
+        newSelectedIndex.splice(newSelectedIndex.indexOf(index), 1);
+      } else {
+        newSelectedIndex = [...newSelectedIndex, index];
+      }
+      console.log(
+        'kyle_debug ~ file: App.js ~ line 109 ~ App ~ newSelectedIndex',
+        newSelectedIndex,
+      );
+
+      if (newSelectedIndex.length <= 2) {
+        setSelectedIndex(newSelectedIndex);
+      }
+    },
+    [selectedIndex],
+  );
 
   return (
     <SafeAreaView style={backgroundStyle}>
@@ -106,11 +158,16 @@ const App = () => {
           onLayout={onLayout}>
           <FlatList
             data={grid}
-            renderItem={({item}) => (
-              <View
+            renderItem={({item, index}) => (
+              <TouchableOpacity
+                onPress={() => cardOnPress(index)}
                 style={{
                   flex: 1,
-                  backgroundColor: item.hex,
+                  backgroundColor: resolvedIndex.includes(index)
+                    ? 'white'
+                    : selectedIndex.includes(index)
+                    ? item.hex
+                    : 'grey',
                   width: dimensions.width / column,
                   height: dimensions.height / row,
                   borderWidth: 1,
