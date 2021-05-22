@@ -59,6 +59,11 @@ const styles = StyleSheet.create({
   scoreRanking: {
     marginVertical: 15,
   },
+  centeredView: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   modalView: {
     display: 'flex',
     width: '50%',

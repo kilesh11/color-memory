@@ -18,6 +18,7 @@ import {
   useColorScheme,
   View,
   Alert,
+  Image,
 } from 'react-native';
 import Gameboard from './Gameboard';
 import Highestscore from './Highestscore';
@@ -166,7 +167,14 @@ const App = () => {
   const header = (
     <>
       <View style={styles.logo}>
-        <Text style={{fontSize: 16}}>Color Memory</Text>
+        <Image
+          style={{
+            width: 100,
+            height: 100,
+            resizeMode: 'contain',
+          }}
+          source={require('./logo.png')}
+        />
       </View>
       <Text style={styles.score}>{score}</Text>
       <View style={styles.highestScore}>
@@ -239,42 +247,6 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     justifyContent: 'flex-end',
-  },
-  centeredView: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  modalView: {
-    display: 'flex',
-    width: '50%',
-    backgroundColor: '#eaeaea',
-    padding: 10,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
-  },
-  input: {
-    width: '100%',
-    borderRadius: 5,
-    overflow: 'hidden',
-    backgroundColor: 'white',
-    marginTop: 10,
-    marginBottom: 10,
-    marginLeft: 30,
-    marginRight: 30,
-    padding: 10,
-  },
-  tableHeader: {
-    fontSize: 20,
   },
 });
 
