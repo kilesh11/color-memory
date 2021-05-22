@@ -8,6 +8,7 @@
  */
 
 import React, {useState, useCallback, useEffect} from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   Button,
   SafeAreaView,
@@ -33,18 +34,7 @@ function shuffleArray(array) {
   return array;
 }
 
-const color = {
-  red: '#cd5c5c',
-  orange: '#ec9706',
-  yellow: '#fdee87',
-  green: '#85c285',
-  blue: '#3c89d0',
-  violet: '#945cb4',
-  black: '#000',
-  brown: '#92623a',
-};
-
-const generateColorGrid = () => {
+function generateColorGrid() {
   const array = [
     {hex: color.red},
     {hex: color.orange},
@@ -56,6 +46,17 @@ const generateColorGrid = () => {
     {hex: color.brown},
   ];
   return shuffleArray([...array, ...array]);
+}
+
+const color = {
+  red: '#cd5c5c',
+  orange: '#ec9706',
+  yellow: '#fdee87',
+  green: '#85c285',
+  blue: '#3c89d0',
+  violet: '#945cb4',
+  black: '#000',
+  brown: '#92623a',
 };
 
 const column = 4;
@@ -70,13 +71,33 @@ const App = () => {
   const [name, setName] = useState('');
   const [selectedIndex, setSelectedIndex] = useState([]);
   const [dimensions, setDimensions] = useState({width: 0, height: 0});
+  const [ranking, setRanking] = useState([]);
+
   const backgroundStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
 
+  const fetchRanking = useCallback(async () => {
+    try {
+      const jsonValue = await AsyncStorage.getItem('ranking');
+      const newRanking = jsonValue != null ? JSON.parse(jsonValue) : [];
+      console.log(
+        'kyle_debug ~ file: App.js ~ line 84 ~ fetchRanking ~ newRanking',
+        newRanking,
+      );
+      setRanking(newRanking);
+    } catch (e) {
+      Alert.alert('cannot find ranking');
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchRanking();
+  }, [fetchRanking]);
+
   useEffect(() => {
     if (selectedIndex.length === 2) {
-      let timer1 = setTimeout(() => {
+      let timer = setTimeout(() => {
         if (grid[selectedIndex[0]].hex === grid[selectedIndex[1]].hex) {
           setScore(prevScore => prevScore + 5);
           setResolvedIndex(prevResolvedIndex => [
@@ -90,7 +111,7 @@ const App = () => {
         }
       }, 1000);
       return () => {
-        clearTimeout(timer1);
+        clearTimeout(timer);
       };
     }
   }, [selectedIndex, grid]);
@@ -122,22 +143,26 @@ const App = () => {
     [selectedIndex],
   );
 
-  const onScoreSubmit = useCallback(() => {
+  const onScoreSubmit = useCallback(async () => {
     if (name === '') {
       Alert.alert('name cannot be empty');
     } else {
-      const record = {
-        name,
-        score,
-      };
-      console.log(
-        'kyle_debug ~ file: App.js ~ line 138 ~ onScoreSubmit ~ record',
-        record,
-      );
-
-      onReset();
+      try {
+        const newRanking = [...ranking];
+        newRanking.push({
+          name,
+          score,
+        });
+        newRanking.sort((a, b) => b.score - a.score);
+        const jsonValue = JSON.stringify(newRanking);
+        await AsyncStorage.setItem('ranking', jsonValue);
+        onReset();
+        await fetchRanking();
+      } catch (e) {
+        // saving error
+      }
     }
-  }, [name, score, onReset]);
+  }, [name, score, onReset, ranking, fetchRanking]);
 
   const onReset = useCallback(() => {
     setName('');
@@ -177,7 +202,7 @@ const App = () => {
         </View>
         <View
           style={{
-            height: '95%',
+            height: '90%',
             flex: 1,
           }}
           onLayout={onLayout}>
@@ -234,7 +259,7 @@ const App = () => {
 
 const styles = StyleSheet.create({
   header: {
-    height: '5%',
+    height: '10%',
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
