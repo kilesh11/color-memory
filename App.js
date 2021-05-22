@@ -21,26 +21,37 @@ import {
 
 import {Colors} from 'react-native/Libraries/NewAppScreen';
 
+function shuffleArray(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+}
+
+const color = {
+  red: '#cd5c5c',
+  orange: '#ec9706',
+  yellow: '#fdee87',
+  green: '#85c285',
+  blue: '#3c89d0',
+  violet: '#945cb4',
+  black: '#000',
+  brown: '#92623a',
+};
+
 const generateColorGrid = () => {
-  const red = '#cd5c5c';
-  const orange = '#ec9706';
-  const yellow = '#fdee87';
-  const green = '#85c285';
-  const blue = '#3c89d0';
-  const violet = '#945cb4';
-  const black = '#000';
-  const white = '#fff';
   const array = [
-    {hex: red},
-    {hex: orange},
-    {hex: yellow},
-    {hex: green},
-    {hex: blue},
-    {hex: violet},
-    {hex: black},
-    {hex: white},
+    {hex: color.red},
+    {hex: color.orange},
+    {hex: color.yellow},
+    {hex: color.green},
+    {hex: color.blue},
+    {hex: color.violet},
+    {hex: color.black},
+    {hex: color.brown},
   ];
-  return [...array, ...array];
+  return shuffleArray([...array, ...array]);
 };
 
 const column = 4;
@@ -102,10 +113,13 @@ const App = () => {
                   backgroundColor: item.hex,
                   width: dimensions.width / column,
                   height: dimensions.height / row,
+                  borderWidth: 1,
+                  borderColor: '#fff',
                 }}
               />
             )}
             numColumns={4}
+            scrollEnabled={false}
             keyExtractor={(item, index) => index.toString()}
           />
         </View>
