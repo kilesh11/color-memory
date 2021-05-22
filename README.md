@@ -21,7 +21,7 @@ pod install
 cd ..
 ```
 
-### Step 1: Start Metro
+### Step 3: Start Metro
 
 Then, you will need to start Metro, the JavaScript bundler that ships with React Native. Metro "takes in an entry file and various options, and returns a single JavaScript file that includes all your code and its dependencies."—[Metro Docs](https://facebook.github.io/metro/docs/concepts)
 
@@ -37,7 +37,7 @@ npx react-native start
 
 > If you're familiar with web development, Metro is a lot like webpack—for React Native apps. Unlike Kotlin or Java, JavaScript isn't compiled—and neither is React Native. Bundling isn't the same as compiling, but it can help improve startup performance and translate some platform-specific JavaScript into more widely supported JavaScript.
 
-### Step 2: Start your application
+### Step 4: Start your application
 
 Let Metro Bundler run in its own terminal. Open a new terminal inside your React Native project folder. Run the following:
 
