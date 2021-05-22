@@ -18,6 +18,9 @@ import {
   View,
   FlatList,
   TouchableOpacity,
+  Modal,
+  TextInput,
+  Alert,
 } from 'react-native';
 
 import {Colors} from 'react-native/Libraries/NewAppScreen';
@@ -63,15 +66,9 @@ const App = () => {
   const [score, setScore] = useState(0);
   const [grid, setGrid] = useState(() => generateColorGrid());
   const [resolvedIndex, setResolvedIndex] = useState([]);
-  console.log(
-    'kyle_debug ~ file: App.js ~ line 66 ~ App ~ resolvedIndex',
-    resolvedIndex,
-  );
+  const [modalVisible, setModalVisible] = useState(false);
+  const [name, setName] = useState('');
   const [selectedIndex, setSelectedIndex] = useState([]);
-  console.log(
-    'kyle_debug ~ file: App.js ~ line 66 ~ App ~ selectedIndex',
-    selectedIndex,
-  );
   const [dimensions, setDimensions] = useState({width: 0, height: 0});
   const backgroundStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
@@ -98,6 +95,12 @@ const App = () => {
     }
   }, [selectedIndex, grid]);
 
+  useEffect(() => {
+    if (resolvedIndex.length === 16) {
+      setModalVisible(true);
+    }
+  }, [resolvedIndex]);
+
   const onLayout = useCallback(event => {
     let {width, height} = event.nativeEvent.layout;
     setDimensions({width, height});
@@ -111,10 +114,6 @@ const App = () => {
       } else {
         newSelectedIndex = [...newSelectedIndex, index];
       }
-      console.log(
-        'kyle_debug ~ file: App.js ~ line 109 ~ App ~ newSelectedIndex',
-        newSelectedIndex,
-      );
 
       if (newSelectedIndex.length <= 2) {
         setSelectedIndex(newSelectedIndex);
@@ -122,6 +121,32 @@ const App = () => {
     },
     [selectedIndex],
   );
+
+  const onScoreSubmit = useCallback(() => {
+    if (name === '') {
+      Alert.alert('name cannot be empty');
+    } else {
+      const record = {
+        name,
+        score,
+      };
+      console.log(
+        'kyle_debug ~ file: App.js ~ line 138 ~ onScoreSubmit ~ record',
+        record,
+      );
+
+      onReset();
+    }
+  }, [name, score, onReset]);
+
+  const onReset = useCallback(() => {
+    setName('');
+    setScore(0);
+    setSelectedIndex([]);
+    setResolvedIndex([]);
+    setGrid(generateColorGrid);
+    setModalVisible(prevState => !prevState);
+  }, []);
 
   return (
     <SafeAreaView style={backgroundStyle}>
@@ -181,6 +206,28 @@ const App = () => {
           />
         </View>
       </View>
+      <Modal animationType="slide" transparent={true} visible={modalVisible}>
+        <View style={styles.centeredView}>
+          <View style={styles.modalView}>
+            <Text style={{marginVertical: 15}}>Your Score</Text>
+            <Text style={{fontSize: 30}}>{score}</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Tell me Your Name"
+              placeholderTextColor="#aaaaaa"
+              onChangeText={setName}
+              value={name}
+              underlineColorAndroid="transparent"
+              autoCapitalize="none"
+            />
+            <Button
+              title="Submit"
+              style={[styles.button, styles.buttonClose]}
+              onPress={onScoreSubmit}
+            />
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -201,6 +248,39 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     justifyContent: 'flex-end',
+  },
+  centeredView: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalView: {
+    display: 'flex',
+    width: '50%',
+    backgroundColor: '#eaeaea',
+    padding: 10,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  input: {
+    width: '100%',
+    borderRadius: 5,
+    overflow: 'hidden',
+    backgroundColor: 'white',
+    marginTop: 10,
+    marginBottom: 10,
+    marginLeft: 30,
+    marginRight: 30,
+    padding: 10,
   },
 });
 
