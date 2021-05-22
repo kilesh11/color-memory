@@ -1,18 +1,6 @@
 import React from 'react';
 
-import {
-  Button,
-  SafeAreaView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  useColorScheme,
-  View,
-  FlatList,
-  Modal,
-  TextInput,
-  Alert,
-} from 'react-native';
+import {Button, StyleSheet, Text, View, Modal, TextInput} from 'react-native';
 
 function getCurrentRanking(ranking, currentScore) {
   if (ranking.length <= 0) {
